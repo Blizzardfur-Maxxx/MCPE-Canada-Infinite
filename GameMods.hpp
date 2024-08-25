@@ -21,7 +21,7 @@
 //#define ENH_RUN_DAY_NIGHT_CYCLE // Allow the day/night cycle to run.
 //#define ENH_ENABLE_9TH_SLOT     // Enable the 9th hotbar slot, instead of it being a "..." placeholder
 //#define ENH_USE_OWN_AO          // Use own ambient occlusion engine - looks pretty much the same except it fixes the corners
-//#define ENH_ADD_OPTIONS_PAUSE   // Add an 'options' button in the pause menu
+#define ENH_ADD_OPTIONS_PAUSE   // Add an 'options' button in the pause menu
 //#define ENH_EXTRA_ITEMS_IN_INV  // Add extra items in a new 5th row in the inventory.
 //#define ENH_HIGHLIGHT_BY_HOVER  // Highlight buttons by hovering them instead of the usual way.
 //#define ENH_ALLOW_SAND_GRAVITY  // Allow sand to fall.

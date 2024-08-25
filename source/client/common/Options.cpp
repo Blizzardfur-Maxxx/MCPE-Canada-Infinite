@@ -38,7 +38,6 @@ void Options::initDefaultValues()
 	field_23E = 0;
 	field_4   = 1.0f;
 	m_bFlyCheat = false;
-	m_bFlyCheat2 = true;
 	field_241 = 0;
 	field_8   = 0.5f;
 	field_24C = 0;

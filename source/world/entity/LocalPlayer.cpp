@@ -1,7 +1,7 @@
 /********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
-	
+
 	The following code is licensed under the BSD 1 clause license.
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
@@ -102,21 +102,30 @@ int LocalPlayer::move(float x, float y, float z)
 	LocalPlayer* pLP = m_pMinecraft->m_pLocalPlayer;
 	if (Minecraft::DEADMAU5_CAMERA_CHEATS && pLP == this && m_pMinecraft->m_options.m_bFlyCheat)
 	{
-		//@HUH: Using m_pMinecraft->m_pLocalPlayer instead of this, even though they're the same
-		pLP->noPhysics = true;
+		if (m_nAutoJumpFrames > 0)
+		{
+			m_nAutoJumpFrames--;
+			m_pKeyboardInput->m_bJumpButton = true;
+		}
 
-		float field_94_old = walkDist;
+		float posX = pos.x;
+		float posY = pos.y;
+		if (m_pMinecraft->m_options.m_bFlyCheat) { // vl0ds fly hack thing
+			if (y < 0.0f) {
+				y = 0.0f;
+			}
 
-		pLP->calculateFlight(x, y, z);
-		pLP->fallDistance = 0.0f;
-		pLP->vel.y = 0.0f;
+			x *= 5.0f;
+			z *= 5.0f;
 
-		// This looks very funny.
-		result = pLP->Entity::move(field_BF0, field_BF4, field_BF8);
-
-		pLP->onGround = true;
-
-		walkDist = field_94_old;
+			if (m_pKeyboardInput->m_bJumpButton) {
+				y += 0.5f;
+			}
+			if (m_pKeyboardInput->m_bSneakButton) {
+				y -= 0.5f;
+			}
+		}
+		result = Entity::move(x, y, z);
 	}
 	else
 	{
@@ -134,21 +143,6 @@ int LocalPlayer::move(float x, float y, float z)
 
 		float posX = pos.x;
 		float posY = pos.y;
-		if (m_pMinecraft->m_options.m_bFlyCheat2) { // vl0ds fly hack thing
-			if (y < 0.0f) {
-				y = 0.0f;
-			}
-
-			x *= 5.0f;
-			z *= 5.0f;
-
-			if (m_pKeyboardInput->m_bJumpButton) {
-				y += 0.5f;
-			}
-			if (m_pKeyboardInput->m_bSneakButton) {
-				y -= 0.5f;
-			}
-		}
 		result = Entity::move(x, y, z);
 
 		//@BUG: backing up posZ too late
@@ -195,10 +189,10 @@ void LocalPlayer::tick()
 
 	if (m_pMinecraft->isOnline())
 	{
-		if (fabsf(pos.x - field_C24) > 0.1f  ||
+		if (fabsf(pos.x - field_C24) > 0.1f ||
 			fabsf(pos.y - field_C28) > 0.01f ||
-			fabsf(pos.z - field_C2C) > 0.1f  ||
-			fabsf(field_C30 - xRot) > 1.0f  ||
+			fabsf(pos.z - field_C2C) > 0.1f ||
+			fabsf(field_C30 - xRot) > 1.0f ||
 			fabsf(field_C34 - yRot) > 1.0f)
 		{
 			m_pMinecraft->m_pRakNetInstance->send(new MovePlayerPacket(entityId, pos.x, pos.y - heightOffset, pos.z, xRot, yRot));
