@@ -1,0 +1,20 @@
+/********************************************************************
+	Minecraft: Pocket Edition - Decompilation Project
+	Copyright (C) 2023 iProgramInCpp
+	
+	The following code is licensed under the BSD 1 clause license.
+	SPDX-License-Identifier: BSD-1-Clause
+ ********************************************************************/
+
+#include "GravelTile.hpp"
+#include "world/level/Level.hpp"
+
+GravelTile::GravelTile(int a, int b, Material* c) : SandTile(a, b, c)
+{
+}
+
+int GravelTile::getResource(int a, Random* b)
+{
+	// @NOTE: Here would drop flint if it were added
+	return id;
+}
