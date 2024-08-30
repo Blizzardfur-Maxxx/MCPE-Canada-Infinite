@@ -191,7 +191,5 @@ std::string ChunkCache::gatherStats() {
 }
 
 bool ChunkCache::fits(int x, int z) const {
-    // Implement logic to check if coordinates fit within valid bounds
-    // For example, if you have a fixed world size or bounds, you can check against those
-    return (x >= 0 && z >= 0);  // Adjust according to your world boundaries
+    return true;
 }
