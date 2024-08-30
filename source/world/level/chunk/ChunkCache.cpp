@@ -39,7 +39,6 @@ LevelChunk* ChunkCache::getChunk(int x, int z) {
         if (m_chunkMap[chunkZ][chunkX]) {
             m_chunkMap[chunkZ][chunkX]->unload();
             save(m_chunkMap[chunkZ][chunkX]);
-            saveEntities(m_chunkMap[chunkZ][chunkX]);
         }
 
         LevelChunk* chunk = load(x, z);
@@ -134,17 +133,6 @@ void ChunkCache::save(LevelChunk* chunk) { /*
         }
     }*/
     return;
-}
-
-void ChunkCache::saveEntities(LevelChunk* chunk) { /*
-    if (m_pChunkStorage) {
-        try {
-            m_pChunkStorage->saveEntities(m_pLevel, chunk);
-        }
-        catch (const std::exception& e) {
-            e.what();  // Log the error
-        }
-    } */
 }
 
 void ChunkCache::postProcess(ChunkSource* source, int x, int z) {

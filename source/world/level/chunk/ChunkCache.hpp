@@ -24,7 +24,6 @@ public:
 private:
     LevelChunk* load(int x, int z);
     void save(LevelChunk* chunk);
-    void saveEntities(LevelChunk* chunk);
     bool fits(int x, int z) const;  // Added declaration
 
     Level* m_pLevel;
