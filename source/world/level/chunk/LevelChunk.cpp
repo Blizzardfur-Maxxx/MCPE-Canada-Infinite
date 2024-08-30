@@ -148,7 +148,7 @@ void LevelChunk::recalcHeightmap()
 	{
 		for (int j = 0; j < 16; j++)
 		{
-			//for ininite worlds
+			//for infnite worlds
 			//lightGaps(i, j);
 		}
 	}
