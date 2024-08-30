@@ -133,6 +133,7 @@ void ChunkCache::save(LevelChunk* chunk) { /*
             e.what();  // Log the error
         }
     }*/
+    return;
 }
 
 void ChunkCache::saveEntities(LevelChunk* chunk) { /*
@@ -155,6 +156,8 @@ void ChunkCache::postProcess(ChunkSource* source, int x, int z) {
             chunk->clearUpdateMap();
         }
     }
+    return;
+
 }
 
 bool ChunkCache::shouldSave() {
@@ -176,6 +179,7 @@ void ChunkCache::saveAll() { /*
     }
 
     m_pChunkStorage->saveAll(m_pLevel, chunksToSave); */
+    return;
 }
 
 int ChunkCache::tick() {
