@@ -563,15 +563,11 @@ void LevelChunk::getEntities(Entity* pEntExclude, const AABB& aabb, std::vector<
 	}
 }
 
-bool LevelChunk::setTile(int x, int y, int z, TileID tile)
-{
+bool LevelChunk::setTile(int x, int y, int z, TileID tile) {
 	CheckPosition(x, y, z);
 
 	int index = MakeBlockDataIndex(x, y, z);
-
 	TileID oldTile = m_pBlockData[index];
-
-	uint8_t height = m_heightMap[MakeHeightMapIndex(x, z)];
 
 	if (oldTile == tile)
 		return false;
@@ -579,39 +575,36 @@ bool LevelChunk::setTile(int x, int y, int z, TileID tile)
 	int globalX = x + 16 * m_chunkX;
 	int globalZ = z + 16 * m_chunkZ;
 	m_pBlockData[index] = tile;
-	if (oldTile)
-	{
-		Tile::tiles[oldTile]->onRemove(m_pLevel, globalX, y, globalZ);
-	}
 
-	// clear the data value of the block
+	if (oldTile)
+		Tile::tiles[oldTile]->onRemove(m_pLevel, globalX, y, globalZ);
+
+	// Clear the data value of the block
 	if (index & 1)
 		m_tileData[index >> 1] &= 0xF;
 	else
 		m_tileData[index >> 1] &= 0xF0;
 
-	if (Tile::lightBlock[tile])
-	{
-		if (height <= y)
+	if (Tile::lightBlock[tile]) {
+		if (m_heightMap[MakeHeightMapIndex(x, z)] <= y)
 			recalcHeight(x, y + 1, z);
 	}
-	else if (height - 1 == y)
-	{
+	else if (m_heightMap[MakeHeightMapIndex(x, z)] - 1 == y) {
 		recalcHeight(x, y, z);
 	}
 
-	m_pLevel->updateLight(LightLayer::Sky,   globalX, y, globalZ, globalX, y, globalZ);
+	m_pLevel->updateLight(LightLayer::Sky, globalX, y, globalZ, globalX, y, globalZ);
 	m_pLevel->updateLight(LightLayer::Block, globalX, y, globalZ, globalX, y, globalZ);
 
 	lightGaps(x, z);
-	if (tile)
-	{
-		if (!m_pLevel->field_11)
-			Tile::tiles[tile]->onPlace(m_pLevel, globalX, y, globalZ);
-	}
+	if (tile && !m_pLevel->field_11)
+		Tile::tiles[tile]->onPlace(m_pLevel, globalX, y, globalZ);
 
 	m_bUnsaved = true;
 	m_updateMap[MakeHeightMapIndex(x, z)] |= 1 << (y >> 4);
+
+	// Mark the chunk as dirty
+	markDirty();
 
 	return true;
 }
@@ -925,6 +918,19 @@ EmptyLevelChunk::EmptyLevelChunk(Level* pLevel, TileID* pBlockData, int x, int z
 	:LevelChunk(pLevel, pBlockData, x, z)
 {
 }
+
+void LevelChunk::markDirty() {
+	m_isDirty = true;
+}
+
+bool LevelChunk::isDirty() const {
+	return m_isDirty;
+}
+
+void LevelChunk::clearDirtyFlag() {
+	m_isDirty = false;
+}
+
 
 int EmptyLevelChunk::getHeightmap(int x, int z)
 {

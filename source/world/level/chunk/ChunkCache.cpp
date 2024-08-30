@@ -1,5 +1,6 @@
 #include "ChunkCache.hpp"
 #include <stdexcept>
+#include <iostream>  // Added for std::cerr
 
 ChunkCache::ChunkCache(Level* level, ChunkStorage* storage, ChunkSource* source)
     : m_pLevel(level), m_pChunkStorage(storage), m_pChunkSource(source),
@@ -122,18 +123,18 @@ LevelChunk* ChunkCache::load(int x, int z) {
     }
 }
 
-void ChunkCache::save(LevelChunk* chunk) { /*
+void ChunkCache::save(LevelChunk* chunk) {
     if (m_pChunkStorage) {
         try {
-            chunk->field_23C = m_pLevel->getTime();
-            m_pChunkStorage->save(m_pLevel, chunk);
+            m_pChunkStorage->save(m_pLevel, chunk); // Save the chunk to storage
         }
         catch (const std::exception& e) {
-            e.what();  // Log the error
+            // Handle exceptions here
+            std::cerr << "Error saving chunk: " << e.what() << std::endl;
         }
-    }*/
-    return;
+    }
 }
+
 
 void ChunkCache::postProcess(ChunkSource* source, int x, int z) {
     LevelChunk* chunk = getChunk(x, z);
@@ -152,23 +153,41 @@ bool ChunkCache::shouldSave() {
     return true;
 }
 
-void ChunkCache::saveAll() { /*
-    if (!m_pChunkStorage) return;
+void ChunkCache::saveAll() {
+    if (m_pChunkStorage) {
+        int chunksToSave = 0;
+        int savedChunks = 0;
 
-    std::vector<LevelChunk*> chunksToSave;
-
-    for (int i = 0; i < CHUNK_CACHE_WIDTH; ++i) {
-        for (int j = 0; j < CHUNK_CACHE_WIDTH; ++j) {
-            LevelChunk* chunk = m_pLevel->getChunk(j, i);
-            if (chunk) {
-                chunksToSave.push_back(chunk);
+        // Count chunks that need saving
+        for (int i = 0; i < 32; ++i) {
+            for (int j = 0; j < 32; ++j) {
+                if (m_chunkMap[i][j] && m_chunkMap[i][j]->shouldSave(true)) {
+                    ++chunksToSave;
+                }
             }
         }
-    }
 
-    m_pChunkStorage->saveAll(m_pLevel, chunksToSave); */
-    return;
+        for (int i = 0; i < 32; ++i) {
+            for (int j = 0; j < 32; ++j) {
+                if (m_chunkMap[i][j]) {
+                    if (m_chunkMap[i][j]->shouldSave(true)) {
+                        save(m_chunkMap[i][j]);
+                        ++savedChunks;
+                        if (savedChunks >= 2) {
+                            return; // Limit to 2 chunks saved if not forced
+                        }
+                    }
+                }
+            }
+        }
+
+        // Optionally flush storage if saving is complete
+        if (m_pChunkStorage) {
+            m_pChunkStorage->flush();
+        }
+    }
 }
+
 
 int ChunkCache::tick() {
     if (m_pChunkStorage) {

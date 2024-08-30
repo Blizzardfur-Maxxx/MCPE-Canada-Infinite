@@ -1,7 +1,7 @@
 /********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
-	
+
 	The following code is licensed under the BSD 1 clause license.
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
@@ -63,13 +63,16 @@ public:
 	virtual Random getRandom(TLong l);
 	virtual void recalcHeight(int, int, int);
 	virtual bool isEmpty();
-	//...
+
+	// Dirty chunk management
+	void markDirty();
+	bool isDirty() const;
+	void clearDirtyFlag();
 
 public:
 	static bool touchedSky;
 
 public:
-
 	int field_4 = 0;
 	bool m_bLoaded = false;
 	Level* m_pLevel;
@@ -92,6 +95,9 @@ public:
 	int field_23C = 0;
 	TileID* m_pBlockData = nullptr;
 	std::vector<Entity*> m_entities[128 / 16];
+
+private:
+	bool m_isDirty = false; // Flag to indicate if the chunk is dirty
 };
 
 //@OVERSIGHT: Why the hell is EmptyLevelChunk derived from the WHOLE of LevelChunk?!

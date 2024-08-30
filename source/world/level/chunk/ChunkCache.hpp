@@ -36,4 +36,3 @@ private:
     int m_LastChunkZ;
     static const int CHUNK_CACHE_WIDTH = 32;
 };
-
