@@ -69,7 +69,9 @@ ChunkSource* Level::createChunkSource()
 	{
 		ChunkStorage* pChkStr = m_pLevelStorage->createChunkStorage(m_pDimension);
 		ChunkSource* pChkSrc = m_pDimension->createRandomLevelSource();
-		return new ChunkCache(this, pChkStr, pChkSrc);
+		//return new ChunkCache(this, pChkStr, pChkSrc);
+		//for finite worlds
+		return m_pDimension->createRandomLevelSource();
 	}
 #endif
 

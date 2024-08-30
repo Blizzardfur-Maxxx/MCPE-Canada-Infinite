@@ -148,7 +148,8 @@ void LevelChunk::recalcHeightmap()
 	{
 		for (int j = 0; j < 16; j++)
 		{
-			lightGaps(i, j);
+			//for finite
+			//lightGaps(i, j);
 		}
 	}
 }
