@@ -34,44 +34,38 @@ void RegionFile::close()
 	}
 }
 
-bool RegionFile::open()
-{
-	close();
-	memset(field_20, 0, 1024 * sizeof(int));
-	
-	m_pFile = fopen(m_fileName.c_str(), "r+b");
-	if (m_pFile)
-	{
-		READ(field_20, sizeof(int), 1024, m_pFile);
-		
-		field_28[0] = false;
+bool RegionFile::open() {
+    close();
 
-		for (int i = 0; i < 1024; i++)
-		{
-			int v13 = this->field_20[i];
-			if (v13)
-			{
-				int v12 = v13 >> 8;
-				int v11 = uint8_t(v13);
-				for (int j = 0; j < v11; ++j)
-				{
-					field_28[j + v12] = false;
-				}
-			}
-		}
+    m_pFile = fopen(m_fileName.c_str(), "r+b");
+    if (m_pFile) {
+        // Read existing data from file
+        READ(field_20, sizeof(int), 1024, m_pFile);
 
-		return m_pFile != nullptr;
-	}
+        field_28[0] = false;
+        for (int i = 0; i < 1024; i++) {
+            int v13 = this->field_20[i];
+            if (v13) {
+                int v12 = v13 >> 8;
+                int v11 = uint8_t(v13);
+                for (int j = 0; j < v11; ++j) {
+                    field_28[j + v12] = false;
+                }
+            }
+        }
 
-	m_pFile = fopen(m_fileName.c_str(), "w+b");
-	if (!m_pFile)
-		return false;
+        return m_pFile != nullptr;
+    }
 
-	WRITE(field_20, sizeof(int), 1024, m_pFile);
-	field_28[0] = false;
+    m_pFile = fopen(m_fileName.c_str(), "w+b");
+    if (!m_pFile)
+        return false;
 
-	return true;
+    WRITE(field_20, sizeof(int), 1024, m_pFile);
+    field_28[0] = false;
+    return true;
 }
+
 
 bool RegionFile::readChunk(int x, int z, RakNet::BitStream** pBitStream)
 {
@@ -84,18 +78,41 @@ bool RegionFile::readChunk(int x, int z, RakNet::BitStream** pBitStream)
 
 	int length = 0;
 	fseek(m_pFile, thing * SECTOR_BYTES, SEEK_SET);
-	fread(&length, sizeof(int), 1, m_pFile);
-	
-	assert(length < ((offset & 0xff) * SECTOR_BYTES));
 
-	length -= 4;
+	// Read length from file
+	if (fread(&length, sizeof(int), 1, m_pFile) != 1) {
+		return false;
+	}
 
-	uint8_t* data = new uint8_t[length];
-	READ(data, 1, length, m_pFile);
+	printf("Length: %d, Offset: %d, Sector Size: %d\n", length, offset, SECTOR_BYTES);
 
+	// Check if length is valid
+	if (length <= 0 || length >= ((offset & 0xff) * SECTOR_BYTES)) {
+		return false;
+	}
+
+	length -= 4; // Adjust length for the 4-byte length prefix
+
+	// Attempt to allocate memory
+	uint8_t* data = nullptr;
+	try {
+		data = new uint8_t[length];
+	}
+	catch (const std::bad_alloc& e) {
+		return false;
+	}
+
+	// Read chunk data from file
+	if (fread(data, 1, length, m_pFile) != length) {
+		delete[] data; // Clean up allocated memory on failure
+		return false;
+	}
+
+	// Create BitStream
 	*pBitStream = new RakNet::BitStream(data, length, false);
 	return true;
 }
+
 
 bool RegionFile::write(int index, RakNet::BitStream& bitStream)
 {

@@ -95,53 +95,34 @@ void ExternalFileLevelStorage::closeAll()
 {
 }
 
-void ExternalFileLevelStorage::tick()
-{
+void ExternalFileLevelStorage::tick() {
 	m_timer++;
 	if (m_timer % 50 != 0 || !m_pLevel)
 		return;
 
-	for (int z = 0; z < C_MAX_CHUNKS_Z; z++)
-	{
-		for (int x = 0; x < C_MAX_CHUNKS_X; x++)
-		{
-			LevelChunk* pChunk = m_pLevel->getChunk(x, z);
-			if (!pChunk || !pChunk->m_bUnsaved)
-				continue;
-
-			int index = x + z * 16;
-
-			auto iter = m_unsavedLevelChunks.begin();
-			for (; iter != m_unsavedLevelChunks.end(); ++iter)
-			{
-				if (iter->m_index == index)
-				{
-					iter->m_foundTime = RakNet::GetTimeMS();
-					break;
-				}
-			}
-
-			if (iter == m_unsavedLevelChunks.end())
-			{
-				UnsavedLevelChunk ulc = { index, int(RakNet::GetTimeMS()), pChunk };
-				m_unsavedLevelChunks.push_back(ulc);
-			}
-
-			pChunk->m_bUnsaved = false;
+	for (auto iter = m_unsavedLevelChunks.begin(); iter != m_unsavedLevelChunks.end(); ) {
+		LevelChunk* pChunk = iter->m_pChunk;
+		if (!pChunk || !pChunk->m_bUnsaved) {
+			iter = m_unsavedLevelChunks.erase(iter);
+			continue;
 		}
+
+		int index = pChunk->m_chunkX + pChunk->m_chunkZ * 16;
+		iter->m_foundTime = RakNet::GetTimeMS();
+		++iter;
+
+		save(m_pLevel, pChunk);
 	}
 
+	// Save up to 2 chunks per tick if any unsaved chunks are present
 	int count = 0;
-	while (count < C_CHUNKS_TO_SAVE_PER_TICK && !m_unsavedLevelChunks.empty())
-	{
+	while (count < C_CHUNKS_TO_SAVE_PER_TICK && !m_unsavedLevelChunks.empty()) {
 		count++;
 
-		auto iter = m_unsavedLevelChunks.begin();
-		for (auto it2 = m_unsavedLevelChunks.begin(); it2 != m_unsavedLevelChunks.end(); ++it2)
-		{
-			if (iter->m_foundTime > it2->m_foundTime)
-				iter = it2;
-		}
+		auto iter = std::min_element(m_unsavedLevelChunks.begin(), m_unsavedLevelChunks.end(),
+			[](const UnsavedLevelChunk& a, const UnsavedLevelChunk& b) {
+				return a.m_foundTime < b.m_foundTime;
+			});
 
 		LevelChunk* pChunk = iter->m_pChunk;
 		m_unsavedLevelChunks.erase(iter);
@@ -149,6 +130,7 @@ void ExternalFileLevelStorage::tick()
 		save(m_pLevel, pChunk);
 	}
 }
+
 
 void ExternalFileLevelStorage::flush()
 {
@@ -200,34 +182,30 @@ LevelChunk* ExternalFileLevelStorage::load(Level* level, int x, int z)
 	return pChunk;
 }
 
-void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk)
-{
+void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk) {
 	if (!m_pRegionFile)
 		m_pRegionFile = new RegionFile(m_levelDirPath);
 
-	if (!m_pRegionFile->open())
-	{
+	if (!m_pRegionFile->open()) {
 		SAFE_DELETE(m_pRegionFile);
 		m_pRegionFile = nullptr;
-
 		LogMsg("Not saving :(   (x: %d  z: %d)", chunk->m_chunkX, chunk->m_chunkZ);
 		return;
 	}
 
 	RakNet::BitStream bs;
 	bs.Write((const char*)chunk->m_pBlockData, 16 * 16 * 128 * sizeof(TileID));
-	bs.Write((const char*)chunk->m_tileData,   16 * 16 * 128 / 2);
+	bs.Write((const char*)chunk->m_tileData, 16 * 16 * 128 / 2);
 
-	if (m_pLevelData->field_20 == 1)
-	{
+	if (m_pLevelData->field_20 == 1) {
 		bs.Write((const char*)chunk->m_lightSky, 16 * 16 * 128 / 2);
 		bs.Write((const char*)chunk->m_lightBlk, 16 * 16 * 128 / 2);
 	}
 
-	bs.Write((const char*)chunk->m_updateMap, sizeof chunk->m_updateMap);
-
+	bs.Write((const char*)chunk->m_updateMap, sizeof(chunk->m_updateMap));
 	m_pRegionFile->writeChunk(chunk->m_chunkX, chunk->m_chunkZ, bs);
 }
+
 
 void ExternalFileLevelStorage::saveEntities(Level* level, LevelChunk* chunk)
 {
