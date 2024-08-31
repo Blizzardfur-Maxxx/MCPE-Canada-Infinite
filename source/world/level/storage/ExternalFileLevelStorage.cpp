@@ -97,32 +97,45 @@ void ExternalFileLevelStorage::closeAll()
 
 void ExternalFileLevelStorage::tick() {
 	m_timer++;
-	if (m_timer % 50 != 0 || !m_pLevel)
+	if (m_timer % 50 != 0 || !m_pLevel) {
 		return;
+	}
 
-	for (auto iter = m_unsavedLevelChunks.begin(); iter != m_unsavedLevelChunks.end(); ) {
-		LevelChunk* pChunk = iter->m_pChunk;
+	// Store the returned vector in a local variable instead of a reference.
+	auto loadedChunks = m_pLevel->getLoadedChunks();
+	for (LevelChunk* pChunk : loadedChunks) {
 		if (!pChunk || !pChunk->m_bUnsaved) {
-			iter = m_unsavedLevelChunks.erase(iter);
 			continue;
 		}
 
 		int index = pChunk->m_chunkX + pChunk->m_chunkZ * 16;
-		iter->m_foundTime = RakNet::GetTimeMS();
-		++iter;
 
-		save(m_pLevel, pChunk);
+		auto iter = m_unsavedLevelChunks.begin();
+		for (; iter != m_unsavedLevelChunks.end(); ++iter) {
+			if (iter->m_index == index) {
+				iter->m_foundTime = RakNet::GetTimeMS();
+				break;
+			}
+		}
+
+		if (iter == m_unsavedLevelChunks.end()) {
+			UnsavedLevelChunk ulc = { index, int(RakNet::GetTimeMS()), pChunk };
+			m_unsavedLevelChunks.push_back(ulc);
+		}
+
+		pChunk->m_bUnsaved = false;
 	}
 
-	// Save up to 2 chunks per tick if any unsaved chunks are present
 	int count = 0;
 	while (count < C_CHUNKS_TO_SAVE_PER_TICK && !m_unsavedLevelChunks.empty()) {
 		count++;
 
-		auto iter = std::min_element(m_unsavedLevelChunks.begin(), m_unsavedLevelChunks.end(),
-			[](const UnsavedLevelChunk& a, const UnsavedLevelChunk& b) {
-				return a.m_foundTime < b.m_foundTime;
-			});
+		auto iter = m_unsavedLevelChunks.begin();
+		for (auto it2 = m_unsavedLevelChunks.begin(); it2 != m_unsavedLevelChunks.end(); ++it2) {
+			if (iter->m_foundTime > it2->m_foundTime) {
+				iter = it2;
+			}
+		}
 
 		LevelChunk* pChunk = iter->m_pChunk;
 		m_unsavedLevelChunks.erase(iter);
@@ -130,6 +143,8 @@ void ExternalFileLevelStorage::tick() {
 		save(m_pLevel, pChunk);
 	}
 }
+
+
 
 
 void ExternalFileLevelStorage::flush()

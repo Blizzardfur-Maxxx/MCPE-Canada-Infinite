@@ -444,6 +444,22 @@ LevelChunk* Level::getChunkAt(int gx, int gz)
 	return getChunk(gx >> 4, gz >> 4);
 }
 
+std::vector<LevelChunk*> Level::getLoadedChunks() {
+	std::vector<LevelChunk*> loadedChunks;
+
+	// Assuming m_pChunkSource is an instance of ChunkCache or similar class
+	if (m_pChunkSource) {
+		ChunkCache* cache = dynamic_cast<ChunkCache*>(m_pChunkSource);
+		if (cache) {
+			// If ChunkCache has a method to retrieve all loaded chunks
+			loadedChunks = cache->getLoadedChunks();
+		}
+	}
+
+	return loadedChunks;
+}
+
+
 void Level::updateLight(const LightLayer& ll, int a, int b, int c, int d, int e, int f, bool unimportant)
 {
 	static int nUpdateLevels;
@@ -899,13 +915,11 @@ int Level::getTopTileY(int x, int z)
 	return y;
 }
 
-int Level::getTopSolidBlock(int x, int z)
-{
+int Level::getTopSolidBlock(int x, int z) {
 	int y = C_MAX_Y - 1;
 	LevelChunk* pChunk = getChunkAt(x, z);
 
-	while (true)
-	{
+	while (true) {
 		if (!getMaterial(x, y, z)->blocksMotion())
 			break;
 		if (!y)
@@ -917,23 +931,25 @@ int Level::getTopSolidBlock(int x, int z)
 	if (y <= C_MIN_Y)
 		return 0;
 
-	while (true)
-	{
+	while (true) {
 		TileID tile = pChunk->getTile(cx, y, cz);
-		if (tile)
-		{
-			if (Tile::tiles[tile]->material->blocksMotion())
+
+		// Check if the tile is valid and the tile object exists
+		if (tile && Tile::tiles[tile] != nullptr) {
+			if (Tile::tiles[tile]->material && Tile::tiles[tile]->material->blocksMotion())
 				return y + 1;
-			
-			if (Tile::tiles[tile]->material->isLiquid())
+
+			if (Tile::tiles[tile]->material && Tile::tiles[tile]->material->isLiquid())
 				break;
 		}
+
 		if (!--y)
 			return -1;
 	}
 
 	return y + 1;
 }
+
 
 void Level::validateSpawn()
 {

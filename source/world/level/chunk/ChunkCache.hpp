@@ -20,6 +20,7 @@ public:
     bool shouldSave() override;
     void saveAll() override;
     int tick() override;
+    std::vector<LevelChunk*> getLoadedChunks();
 
 private:
     LevelChunk* load(int x, int z);

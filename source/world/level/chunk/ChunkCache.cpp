@@ -82,6 +82,21 @@ LevelChunk* ChunkCache::getChunk(int x, int z) {
     return m_chunkMap[chunkZ][chunkX];
 }
 
+std::vector<LevelChunk*> ChunkCache::getLoadedChunks() {
+    std::vector<LevelChunk*> loadedChunks;
+
+    for (int i = 0; i < CHUNK_CACHE_WIDTH; ++i) {
+        for (int j = 0; j < CHUNK_CACHE_WIDTH; ++j) {
+            LevelChunk* chunk = m_chunkMap[i][j];
+            if (chunk && chunk != m_pEmptyChunk) {
+                loadedChunks.push_back(chunk);
+            }
+        }
+    }
+
+    return loadedChunks;
+}
+
 bool ChunkCache::hasChunk(int x, int z) {
     if (!fits(x, z)) {
         return false;

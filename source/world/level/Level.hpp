@@ -155,6 +155,8 @@ public:
 	Entity* getNearestPlayer(Entity*, float);
 	Entity* getNearestPlayer(float x, float y, float z, float);
 
+	std::vector<LevelChunk*> getLoadedChunks();
+
 	// unused redstone stuff
 	int getSignal(int x, int y, int z, int dir);
 	int getDirectSignal(int x, int y, int z, int dir);
