@@ -62,12 +62,7 @@ public:
 	virtual int  setBlocksAndData(uint8_t* pData, int, int, int, int, int, int, int);
 	virtual Random getRandom(TLong l);
 	virtual void recalcHeight(int, int, int);
-	virtual bool isEmpty();
-
-	// Dirty chunk management
-	void markDirty();
-	bool isDirty() const;
-	void clearDirtyFlag();
+	virtual bool isEmpty();	
 
 public:
 	static bool touchedSky;
@@ -97,7 +92,6 @@ public:
 	std::vector<Entity*> m_entities[128 / 16];
 
 private:
-	bool m_isDirty = false; // Flag to indicate if the chunk is dirty
 };
 
 //@OVERSIGHT: Why the hell is EmptyLevelChunk derived from the WHOLE of LevelChunk?!
