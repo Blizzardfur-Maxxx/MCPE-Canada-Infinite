@@ -151,17 +151,21 @@ void ChunkCache::save(LevelChunk* chunk) {
 }
 
 
-void ChunkCache::postProcess(ChunkSource* source, int x, int z) {
-    LevelChunk* chunk = getChunk(x, z);
-    if (!chunk->field_234) {
-        chunk->field_234 = 1;
-        if (m_pChunkSource) {
-            m_pChunkSource->postProcess(source, x, z);
-            chunk->clearUpdateMap();
+void ChunkCache::postProcess(ChunkSource* pChkSrc, int x, int z)
+{
+    if (x < 0 || z < 0 || x >= C_MAX_CHUNKS_X || z >= C_MAX_CHUNKS_Z)
+        return;
+
+    LevelChunk* pChunk = getChunk(x, z);
+    if (!pChunk->field_234)
+    {
+        pChunk->field_234 = 1;
+        if (m_pChunkSource)
+        {
+            m_pChunkSource->postProcess(m_pChunkSource, x, z);
+            pChunk->clearUpdateMap();
         }
     }
-    return;
-
 }
 
 bool ChunkCache::shouldSave() {
