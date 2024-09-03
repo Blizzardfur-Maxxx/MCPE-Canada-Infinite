@@ -915,13 +915,11 @@ int Level::getTopTileY(int x, int z)
 	return y;
 }
 
-int Level::getTopSolidBlock(int x, int z)
-{
+int Level::getTopSolidBlock(int x, int z) {
 	int y = C_MAX_Y - 1;
 	LevelChunk* pChunk = getChunkAt(x, z);
 
-	while (true)
-	{
+	while (true) {
 		if (!getMaterial(x, y, z)->blocksMotion())
 			break;
 		if (!y)
@@ -933,17 +931,17 @@ int Level::getTopSolidBlock(int x, int z)
 	if (y <= C_MIN_Y)
 		return 0;
 
-	while (true)
-	{
+	while (true) {
 		TileID tile = pChunk->getTile(cx, y, cz);
-		if (tile)
-		{
-			if (Tile::tiles[tile]->material->blocksMotion())
+
+		if (tile && Tile::tiles[tile] != nullptr) {
+			if (Tile::tiles[tile]->material && Tile::tiles[tile]->material->blocksMotion())
 				return y + 1;
 
-			if (Tile::tiles[tile]->material->isLiquid())
+			if (Tile::tiles[tile]->material && Tile::tiles[tile]->material->isLiquid())
 				break;
 		}
+
 		if (!--y)
 			return -1;
 	}
