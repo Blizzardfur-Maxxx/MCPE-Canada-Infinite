@@ -94,7 +94,7 @@ Material* Region::getMaterial(int x, int y, int z)
 	if (pTile == nullptr)
 		return Material::air;
 
-	return pTile->m_pMaterial;
+	return Tile::tiles[tile]->material;
 }
 
 bool Region::isSolidTile(int x, int y, int z)
