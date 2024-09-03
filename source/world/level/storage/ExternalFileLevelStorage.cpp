@@ -96,6 +96,8 @@ void ExternalFileLevelStorage::closeAll()
 }
 
 void ExternalFileLevelStorage::tick() {
+	int count = 0;
+
 	m_timer++;
 	if (m_timer % 50 != 0 || !m_pLevel) {
 		return;
@@ -126,7 +128,6 @@ void ExternalFileLevelStorage::tick() {
 		pChunk->m_bUnsaved = false;
 	}
 
-	int count = 0;
 	while (count < C_CHUNKS_TO_SAVE_PER_TICK && !m_unsavedLevelChunks.empty()) {
 		count++;
 
