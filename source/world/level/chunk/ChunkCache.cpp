@@ -216,7 +216,6 @@ void ChunkCache::saveUnsaved()
 
     std::vector<LevelChunk*> chunksToSave;
 
-#ifdef INFWORLDS
     for (int i = 0; i < CHUNK_CACHE_WIDTH; i++)
     {
         for (int j = 0; j < CHUNK_CACHE_WIDTH; j++)
@@ -228,20 +227,6 @@ void ChunkCache::saveUnsaved()
             }
         }
     }
-#else
-    for (int i = 0; i < C_MAX_CHUNKS_Z; i++)
-    {
-        for (int j = 0; j < C_MAX_CHUNKS_X; j++)
-        {
-            LevelChunk* pChunk = m_pLevel->getChunk(j, i);
-            if (!pChunk->m_bUnsaved)
-                continue;
-
-            chunksToSave.push_back(pChunk);
-        }
-    }
-#endif
-
     m_pChunkStorage->saveAll(m_pLevel, chunksToSave);
 }
 
