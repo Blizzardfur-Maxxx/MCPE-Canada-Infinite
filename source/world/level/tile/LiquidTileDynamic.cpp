@@ -22,12 +22,19 @@ bool LiquidTileDynamic::isWaterBlocking(Level* level, int x, int y, int z)
 	if (!tile)
 		return false;
 
-	return Tile::tiles[tile]->material->isSolid();
+	Material* pMtl = (Tile::tiles[tile] != nullptr) ? Tile::tiles[tile]->material : Material::stone;
+
+	return pMtl->isSolid();
 }
 
 bool LiquidTileDynamic::canSpreadTo(Level* level, int x, int y, int z)
 {
 	Material* pMtl = level->getMaterial(x, y, z);
+
+	if (pMtl == nullptr) {
+		pMtl = Material::stone;
+	}
+
 	if (pMtl == material || pMtl == Material::lava)
 		return false;
 
