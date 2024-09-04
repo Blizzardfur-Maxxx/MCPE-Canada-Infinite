@@ -47,14 +47,14 @@ void SavingWorldScreen::tick()
 			m_pMinecraft->m_pLevel = nullptr;
 		}
 
-		m_pMinecraft->field_DB0 = true;
+		//m_pMinecraft->field_DB0 = true;
 
 		if (m_bCopyMapAtEnd)
 			m_pMinecraft->setScreen(new RenameMPLevelScreen("_LastJoinedServer"));
 		else
 			m_pMinecraft->setScreen(new StartMenuScreen);
 
-		m_pMinecraft->field_DB0 = false;
+		//m_pMinecraft->field_DB0 = false;
 
 		m_pMinecraft->m_bDontTickLevel = false;
 	}

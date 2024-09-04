@@ -617,69 +617,70 @@ bool LevelChunk::setTile(int x, int y, int z, TileID tile)
 
 bool LevelChunk::setTileAndData(int x, int y, int z, TileID tile, int data)
 {
-	CheckPosition(x, y, z);
+    CheckPosition(x, y, z);
 
-	assert((data & ~0xF) == 0);
-	data &= 0xF;
+    assert((data & ~0xF) == 0);
+    data &= 0xF;
 
-	int index = MakeBlockDataIndex(x, y, z);
+    int index = MakeBlockDataIndex(x, y, z);
+    TileID oldTile = m_pBlockData[index];
+    uint8_t height = m_heightMap[MakeHeightMapIndex(x, z)];
 
-	TileID oldTile = m_pBlockData[index];
+    if (oldTile == tile)
+    {
+        // Make sure we're at least updating the data. If not, simply return false
+        if (getData(x, y, z) == data)
+            return false;
+    }
 
-	uint8_t height = m_heightMap[MakeHeightMapIndex(x, z)];
+    int globalX = x + 16 * m_chunkX;
+    int globalZ = z + 16 * m_chunkZ;
+    m_pBlockData[index] = tile;
 
-	if (oldTile == tile)
-	{
-		// make sure we're at least updating the data. If not, simply return false
-		if (getData(x, y, z) == data)
-			return false;
-	}
+    // Check if oldTile is valid and Tile::tiles[oldTile] is not null
+    if (oldTile && Tile::tiles[oldTile] != nullptr)
+    {
+        Tile::tiles[oldTile]->onRemove(m_pLevel, globalX, y, globalZ);
+    }
 
-	int globalX = x + 16 * m_chunkX;
-	int globalZ = z + 16 * m_chunkZ;
-	m_pBlockData[index] = tile;
-	if (oldTile)
-	{
-		Tile::tiles[oldTile]->onRemove(m_pLevel, globalX, y, globalZ);
-	}
+    // Update the data value of the block
+    if (index & 1)
+        m_tileData[index >> 1] = (m_tileData[index >> 1] & 0x0F) | (data << 4);
+    else
+        m_tileData[index >> 1] = (m_tileData[index >> 1] & 0xF0) | (data);
 
-	// update the data value of the block
-	if (index & 1)
-		m_tileData[index >> 1] = (m_tileData[index >> 1] & 0x0F) | (data << 4);
-	else
-		m_tileData[index >> 1] = (m_tileData[index >> 1] & 0xF0) | (data);
+    if (m_pLevel->m_pDimension->field_E)
+    {
+        m_pLevel->updateLight(LightLayer::Block, globalX, y, globalZ, globalX, y, globalZ);
+        lightGaps(x, z);
+    }
 
-	if (m_pLevel->m_pDimension->field_E)
-	{
-		m_pLevel->updateLight(LightLayer::Block, globalX, y, globalZ, globalX, y, globalZ);
-		lightGaps(x, z);
-	}
+    if (Tile::lightBlock[tile])
+    {
+        if (height <= y)
+            recalcHeight(x, y + 1, z);
+    }
+    else if (height - 1 == y)
+    {
+        recalcHeight(x, y, z);
+    }
 
-	if (Tile::lightBlock[tile])
-	{
-		if (height <= y)
-			recalcHeight(x, y + 1, z);
-	}
-	else if (height - 1 == y)
-	{
-		recalcHeight(x, y, z);
-	}
+    m_pLevel->updateLight(LightLayer::Sky, globalX, y, globalZ, globalX, y, globalZ);
+    m_pLevel->updateLight(LightLayer::Block, globalX, y, globalZ, globalX, y, globalZ);
 
-	m_pLevel->updateLight(LightLayer::Sky, globalX, y, globalZ, globalX, y, globalZ);
-	m_pLevel->updateLight(LightLayer::Block, globalX, y, globalZ, globalX, y, globalZ);
+    lightGaps(x, z);
+    if (tile)
+    {
+        if (!m_pLevel->field_11 && Tile::tiles[tile] != nullptr)
+            Tile::tiles[tile]->onPlace(m_pLevel, globalX, y, globalZ);
+    }
 
-	lightGaps(x, z);
-	if (tile)
-	{
-		if (!m_pLevel->field_11)
-			Tile::tiles[tile]->onPlace(m_pLevel, globalX, y, globalZ);
-	}
+    m_bUnsaved = true;
+    m_updateMap[MakeHeightMapIndex(x, z)] |= 1 << (y >> 4);
 
-	m_bUnsaved = true;
-	m_updateMap[MakeHeightMapIndex(x, z)] |= 1 << (y >> 4);
-
-	return true;
+    return true;
 }
+
 
 int LevelChunk::getData(int x, int y, int z)
 {

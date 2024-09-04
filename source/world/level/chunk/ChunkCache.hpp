@@ -20,6 +20,9 @@ public:
     bool shouldSave() override;
     void saveAll() override;
     int tick() override;
+#ifdef ENH_IMPROVED_SAVING
+    void saveUnsaved() override;
+#endif
     std::vector<LevelChunk*> getLoadedChunks();
 
 private:
