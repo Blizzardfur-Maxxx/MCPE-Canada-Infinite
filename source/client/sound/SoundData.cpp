@@ -15,4 +15,4 @@
 // Check the readme for a guide on how to extract game sounds from the
 // mcpe01_canada.apk file.
 // --------------------------------------------------------------------
-#include "C:/Users/blizz/OneDrive/Desktop/Documents/MCPE-CANADA-PORTING/mcped/tools/sound_data/sounds.h"
+#include "../../sound_data/sounds.h"
