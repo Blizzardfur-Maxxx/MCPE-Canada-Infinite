@@ -511,7 +511,7 @@ void RandomLevelSource::postProcess(ChunkSource* src, int x, int z)
 			int i24 = j19 - (x16 + 8);
 			int j25 = j22 - (z16 + 8);
 
-		/*	int tsb = level->getTopSolidBlock(j19, j22);
+			int tsb = level->getTopSolidBlock(j19, j22);
 			
 			if (SNOW_CUTOFF > (tempBlock[i24 * 16 + j25] - SNOW_SCALE * (float(tsb - 64) / 64.0f)))
 			{
@@ -523,7 +523,7 @@ void RandomLevelSource::postProcess(ChunkSource* src, int x, int z)
 						level->setTile(j19, tsb, j22, Tile::topSnow->id);
 					}
 				}
-			}*/
+			}
 		}
 	}
 
