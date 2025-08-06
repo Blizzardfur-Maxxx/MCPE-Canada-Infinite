@@ -216,17 +216,15 @@ void ChunkCache::saveUnsaved()
 
     std::vector<LevelChunk*> chunksToSave;
 
-    for (int i = 0; i < CHUNK_CACHE_WIDTH; i++)
-    {
-        for (int j = 0; j < CHUNK_CACHE_WIDTH; j++)
-        {
+    for (int i = 0; i < CHUNK_CACHE_WIDTH; i++) {
+        for (int j = 0; j < CHUNK_CACHE_WIDTH; j++) {
             LevelChunk* pChunk = m_chunkMap[i][j];
-            if (pChunk && pChunk != m_pEmptyChunk && pChunk->m_bUnsaved)
-            {
+            if (pChunk && pChunk != m_pEmptyChunk && pChunk->shouldSave(true)) {
                 chunksToSave.push_back(pChunk);
             }
         }
     }
+
     m_pChunkStorage->saveAll(m_pLevel, chunksToSave);
 }
 
